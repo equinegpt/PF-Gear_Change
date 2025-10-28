@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: pf-gear-changes
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PF_API_KEY
+        sync: false  # set in Render dashboard
+
+  - type: cron
+    name: pf-gear-refresh-daily
+    env: python
+    schedule: "0 19 * * *"   # daily at 19:00 UTC ≈ 06:00 Melbourne
+    buildCommand: pip install -r requirements.txt
+    startCommand: python cron_refresh.py
+    envVars:
+      - key: APP_BASE_URL
+        value: https://pf-gear-changes.onrender.com
