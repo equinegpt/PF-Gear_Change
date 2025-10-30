@@ -18,8 +18,26 @@ PF_UPD_COND_URL     = "https://api.puntingform.com.au/v2/Updates/Conditions"
 
 # ---------------- helpers ----------------
 
-def _snakify(s: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "_", s.strip().lower())
+import re  # ensure this import exists at top
+
+def _snakify(s):
+    """Safe snake-case: tolerate None/objects, collapse non-alnum to underscores."""
+    if s is None:
+        return ""
+    if not isinstance(s, str):
+        s = str(s)
+    s = s.strip().lower()
+    return re.sub(r"[^a-z0-9]+", "_", s).strip("_")
+
+def _canonise(d):
+    """Normalise dict keys (snake-case) and drop null/empty keys."""
+    if not isinstance(d, dict):
+        return {}
+    lower = {_snakify(k): v for k, v in d.items() if k is not None and str(k).strip() != ""}
+    # remove accidental empty-key entry if any slipped through
+    lower.pop("", None)
+    return lower
+
 
 def _parse_int(x: Any) -> Optional[int]:
     try:
